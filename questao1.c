@@ -6,17 +6,17 @@ typedef struct Nodo{ //Estrutura de um nodo da arvore
     struct Nodo *filhoEsq, *filhoDir;
 }nodo;
 
-int max(int a, int b){
+int max(int a, int b){ // RETORNA O MAIOR VALOR
     if(a>b) return a;
     return b;
 }
 
-int height(nodo *raiz){
+int height(nodo *raiz){ //FUNCAO QUE DEFINE A ALTURA
     if(raiz == NULL) return -1;
     else return raiz->altura;
 }
 
-nodo *criaNodo(int valor){
+nodo *criaNodo(int valor){ //CRIANDO UMA BST QUALQUER
     nodo *novo = (nodo*)malloc(sizeof(nodo));
     novo->chave = valor;
     novo->altura = 0;
@@ -25,7 +25,7 @@ nodo *criaNodo(int valor){
     return novo;
 }
 
-nodo *insere(nodo *raiz, int valor){
+nodo *insere(nodo *raiz, int valor){ //INSERCAO EM UMA ARVORE BST
     if(raiz == NULL) return criaNodo(valor);
     if(valor > raiz->chave) raiz->filhoDir = insere(raiz->filhoDir, valor);
     else raiz->filhoEsq = insere(raiz->filhoEsq, valor);
@@ -33,17 +33,26 @@ nodo *insere(nodo *raiz, int valor){
     return raiz;
 }
 
-int verifica(nodo *raiz){
-    if(raiz->filhoDir != NULL || raiz->filhoEsq != NULL){
-        int balanceamento = raiz->filhoEsq->altura - raiz->filhoDir->altura;
-        if(balanceamento>1 || balanceamento<-1) return 0;
-        return verifica(raiz->filhoEsq);
-        return verifica(raiz->filhoDir);
-    }
-    else{
-        if(raiz->altura > 1 || raiz->altura < -1) return 0;
+int verifica(nodo *raiz, int veri){ //FUNCAO QUE VERIFICA SE A ARVORE E OU NAO AVL, SE QUALQUER NODO ESTIVER DESBALANCEADO A BST NAO EH AVL
+    if(raiz == NULL) return veri;
+    if(height(raiz->filhoDir) - height(raiz->filhoEsq) > 1){
         return 1;
     }
+    else if(height(raiz->filhoEsq) - height(raiz->filhoDir) > 1){
+        return 1;
+    }
+    else{
+        return verifica(raiz->filhoDir, veri);
+        return verifica(raiz->filhoEsq, veri);
+    }
+}
+
+void freeBst(nodo *raiz){
+    if(raiz == NULL) return;
+    freeBst(raiz->filhoEsq);
+    freeBst(raiz->filhoDir);
+    free(raiz);
+    raiz = NULL;
 }
 
 int main(){ //RECEBENDO O VETOR POS ORDER DA ARVORE
@@ -59,10 +68,11 @@ int main(){ //RECEBENDO O VETOR POS ORDER DA ARVORE
         raiz = insere(raiz, V[i]); 
     }
 
-    int avl = verifica(raiz);
-    if(avl == 0) printf("nao eh avl");
+    int avl = verifica(raiz, 0);
+    if(avl == 1) printf("nao eh avl");
     else printf("eh avl");
     free(V);
+    freeBst(raiz);
     printf("\n");
     return 0;
 }
